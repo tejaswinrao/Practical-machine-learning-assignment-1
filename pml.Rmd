@@ -1,0 +1,34 @@
+---
+title: "assignment writeup"
+output: html_document
+---
+#Summary
+This project aims to predict how well people perform weight lifting activities using the Weight Lifting Exercises Dataset (http://groupware.les.inf.puc-rio.br/har).
+```{r}
+library(caret)
+```
+
+Load data.
+```{r}
+trainDat = read.csv("pml-training.csv")
+testDat = read.csv("pml-testing.csv")
+```
+Remove columns with missing data.
+```{r}
+trainDat_clean = trainDat[, which(colSums(is.na(trainDat)) == 0 & colSums(is.na(testDat)) == 0)]
+testDat_clean = testDat[, which(colSums(is.na(trainDat)) == 0 & colSums(is.na(testDat)) == 0)]
+```
+Train random forest model with 5-fold crossvalidation. I chose random forest because it has good general performance and can handle hetergeneous independent variables and multiple categories in the dependent variable.
+```{r}
+train_control <- trainControl(method="cv", number=5)
+model_rf <- train(classe ~., data=trainDat_clean[, c(2:ncol(trainDat_clean))], trControl=train_control, method="rf")
+print(model_rf)
+```
+The expected out of sample error is 1 - 0.9994904 = 0.0005096.
+
+Prediction results for 20 different test cases.
+```{r}
+testDat_pred = predict(model_rf, testDat_clean[, c(2:ncol(trainDat_clean))])
+testDat_pred
+```
+
